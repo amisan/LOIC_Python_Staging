@@ -1,0 +1,19 @@
+This is the readme, SlamDunkn plz amend it as required.
+
+Dependancies:
+python2.6-dev, python2.6-qt4, build-essential
+
+To get the dependancies in debian based distributions (including Ubuntu and Linxu Mint)
+run:
+
+sudo apt-get install python2.6-dev python2.6-qt4 build-essential
+
+
+to build run:
+make
+
+
+to rebuild run:
+make clean; make
+
+
