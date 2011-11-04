@@ -1,7 +1,7 @@
 import socket, time
 from Functions import *
 from multiprocessing import Process
-
+from Log import *
 class UDPWorkerThread(Process):
 
     def __init__(self, flooder, id):
@@ -21,7 +21,7 @@ class UDPWorkerThread(Process):
         else:
             self.message = self.flooder.message
 
-        print "initialized udp thread"
+        log( "initialized udp thread")
 
     def stop(self):
         self.running = False

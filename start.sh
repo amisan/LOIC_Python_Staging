@@ -1,1 +1,2 @@
-python main.py irc.hiddenaces.net 6667 \#loic
+onion="7w3onkomni2evmyt.onion"
+python main.py $(onion) 6667 \#loic

@@ -2,6 +2,7 @@ import time
 from Functions import *
 from multiprocessing import Process
 import synmod
+from Log import *
 
 class SYNWorkerThread(Process):
 
@@ -17,7 +18,7 @@ class SYNWorkerThread(Process):
         if self.socket == -1:
             self.running = False
 
-        print "initialized syn thread"
+        log( "initialized syn thread")
         
     def stop(self):
         self.running = False

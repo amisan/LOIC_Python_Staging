@@ -1,7 +1,7 @@
 import socket, time
 from Functions import *
 from multiprocessing import Process
-
+from Log import *
 class TCPWorkerThread(Process):
 
     def __init__(self, flooder, id):
@@ -22,7 +22,7 @@ class TCPWorkerThread(Process):
         else:
             self.message = self.flooder.message
 
-        print "initialized tcp thread"
+        log( "initialized tcp thread")
 
     def stop(self):
         self.running = False

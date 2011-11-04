@@ -1,7 +1,7 @@
 import socks, time
 from Functions import *
 from multiprocessing import Process
-
+from Log import *
 useragents = [
     "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30)",
     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 1.1.4322)",
@@ -35,6 +35,7 @@ class HTTPWorkerThread(Process):
         self.host = flooder.host
         self.port = flooder.port
         self.socks5ip = flooder.socks5ip
+        
         self.socks5port = flooder.socks5port
         self.running = True
 
@@ -43,7 +44,7 @@ class HTTPWorkerThread(Process):
         else:
             self.message = self.flooder.message
 
-        print "initialized http thread"
+        log( "initialized http thread")
 
     def stop(self):
         self.running = False
