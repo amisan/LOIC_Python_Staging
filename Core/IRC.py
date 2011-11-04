@@ -1,6 +1,7 @@
 import socket, threading, random, time
 from Events import *
 from Functions import *
+from Log import *
 
 class ListenThread(threading.Thread):
 
@@ -36,13 +37,23 @@ class IRC:
         self.host = host
         self.port = port
         self.channel = channel
+        self.online_hook = None
+        
         self.socket = socket.socket()
         self.socket.settimeout(5)
+        
+        if self.host.endswith('.onion'):
+            import socks
+            self.socket.settimeout(30)
+            self.socket = socks.socksocket(_sock=self.socket) 
+            self.socket.setproxy(proxytype=socks.PROXY_TYPE_SOCKS5,addr='127.0.0.1',port=9050)
+            
+
         self.connected = False
 
         self.nick = "LOIC_" + randomString(6)
         self.ops = []
-        print "Nick:", self.nick
+        log( "Nick:"+ self.nick)
 
         getEventManager().addListener(IRC_RECV, self.parseIRCString)
 
@@ -54,8 +65,10 @@ class IRC:
         try:
             self.socket.connect((self.host, self.port))
         except Exception as e:
-            print "error connecting, aborting", e.args
+            log( "error connecting, aborting "+str(e) )
             return
+        if self.online_hook:
+            self.online_hook()
 
         self.connected = True
 
@@ -85,7 +98,7 @@ class IRC:
         string = event.arg
         if string.find("PING") == 0:
             self.socket.send("PONG " + string[5:] + "\r\n")
-            print "PONG", string[5:]
+            log( "PONG "+ string[5:])
         elif string[0] == ":":
             #print string
             info = string.split(" ")
@@ -97,7 +110,7 @@ class IRC:
                         getEventManager().signalEvent(event)
             elif info[2] == self.nick and info[3] == self.channel:
                 if len(info) > 5 and info[4].lower() == ":!lazor":
-                    print "LAZOR"
+                    log("LAZOR")
                     event = Event(LAZER_RECV, info[4:])
                     getEventManager().signalEvent(event)
             elif info[1] == "MODE" and info[2] == self.channel:
@@ -112,13 +125,14 @@ class IRC:
                     op = op.replace(':', '')
                     if op[0] == "@":
                         self.ops.append(op[1:])
-                print "Connection succesful"
+                log( "Connection succesful")
+                self.online_hook()
             elif info[1] == "002":
                 self.socket.send("JOIN %s\r\n" % self.channel)
         else:
-            print "SCRAP", string
+            log( "SCRAP " + string)
             if string == "ERROR :All connections in use":
-                print "retrying in 5 seconds"
+                log( "retrying in 5 seconds")
                 self.disconnect()
 
                 event = Event(IRC_RESTART, None)
