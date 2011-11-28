@@ -6,6 +6,8 @@ from Functions import *
 from UDPWorkerThread import UDPWorkerThread
 from TCPWorkerThread import TCPWorkerThread
 from HTTPWorkerThread import HTTPWorkerThread
+from killapache import KillApacheWorkerThread
+
 try:
     import synmod
 except ImportError:

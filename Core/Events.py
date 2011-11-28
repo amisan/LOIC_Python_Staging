@@ -5,6 +5,9 @@ IRC_RECV = 1
 LAZER_RECV = 2
 START_LAZER = 3
 IRC_RESTART = 4
+ERR = 5
+IRC_EVENT = 6
+GOT_TARGET = 7
 
 class Event:
 
@@ -12,6 +15,9 @@ class Event:
         self.typeID = typeID
         self.arg = arg
 
+
+    def __str__(self):
+        return str(self.arg)
 
 class EventManager(threading.Thread):
 
@@ -50,5 +56,6 @@ def getEventManager():
     global ev_Manager
     if ev_Manager == None:
         ev_Manager = EventManager()
+
     return ev_Manager
 
