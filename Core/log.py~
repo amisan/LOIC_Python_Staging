@@ -1,8 +1,0 @@
-__hook =None
-
-
-def log(self,text):
-    __hook(text)
-
-def set_hook(self,hook):
-    __hook = hook

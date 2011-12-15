@@ -12,7 +12,7 @@ class GUI:
 	def __init__(self,root):
 		self.root = root
 		root.protocol("WM_DELETE_WINDOW", self._quit)
-		root.title('LOIC 2 Gets Shit Done')
+		root.title('cannonymous')
 		frame = Frame(self.root)
 		Label(frame,text='LOIC2 Hivemind Server').pack(side=TOP)
 		frame.pack()
@@ -109,8 +109,10 @@ class GUI:
 			self.flooder = TCP()
 		elif floodtype == 'smtp':
 			self.flooder = SMTP()
+
 	
 		if self.flooder:
+			self.flooder.target = (target,port)
 			self.flooder.start()	
 		else:
 			getEventManager().signalEvent(Event(ERR,'Invalid Flooder Type: %s'%floodtype))
